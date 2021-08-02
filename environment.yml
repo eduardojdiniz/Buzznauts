@@ -1,0 +1,30 @@
+name: Buzznauts
+
+channels:
+    - nvidia
+    - pytorch
+
+dependencies:
+    - python=3.8
+    - numpy
+    - pytorch
+    - torchvision
+    - torchaudio
+    - cudatoolkit=11.1
+    - matplotlib
+    - pandas
+    - scipy
+    - scikit-learn
+    - requests
+    - h5py
+    - tqdm
+    - jupyterlab
+    - pip
+    - pip:
+        - watermark
+        - opencv-python
+        - Pillow
+        - nb-clean
+        - jupyterlab
+        - jupyterlab_vim
+        - ipywidgets
