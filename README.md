@@ -188,7 +188,7 @@ TODO
 
 ### Licensing
 
-License your code! A repository like this without a license maintains
+License our code! A repository like this without a license maintains
 copyright to the author, but does not provide others with any
 conditions under which they can use the software. In this case, we use
 the MIT license. You can read the conditions of the license in the
@@ -213,8 +213,8 @@ update it from duecredit itself. It's
 [here](https://github.com/duecredit/duecredit/blob/master/duecredit/stub.py),
 under the name `stub.py`).
 
-In addition, you will want to provide a digital object identifier (DOI) to the
-article you want people to cite.
+In addition, we will want to provide a digital object identifier (DOI) to the
+article we want people to cite.
 
 TODO
 
