@@ -1,0 +1,2 @@
+duecredit
+numpy

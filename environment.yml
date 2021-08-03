@@ -27,3 +27,8 @@ dependencies:
         - jupyterlab_vim
         - tqdm
         - ipywidgets
+        - duecredit
+        - pytest
+        - coveralls
+        - pytest-cov
+        - flake8
