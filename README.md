@@ -5,7 +5,7 @@ NMA-DL 2021 - Buzznauts
 
 The project has the following structure:
 
-    Buzznaults/
+    Buzznauts/
       |- README.md
       |- Buzznauts/
          |- __init__.py
@@ -42,7 +42,7 @@ you see some name, the definition of that name will appear earlier in the file,
 either as a function/variable definition, or as an import from some other module
 or package.
 
-In the case of the Buzznaults module, the main classes defined at the bottom of
+In the case of the Buzznauts module, the main classes defined at the bottom of
 the file make use of some of the functions defined in preceding lines.
 
 Remember that code will be probably be read more times than it will be written.
@@ -66,7 +66,7 @@ data. In the test scripts, and in the analysis scripts, the following snippet
 provides a standard way to load the file-system location for the data:
 
     import os.path as op
-    import Buzznaults as buzz
+    import Buzznauts as buzz
     data_path = op.join(buzz.__path__[0], 'data')
 
 
@@ -75,7 +75,7 @@ provides a standard way to load the file-system location for the data:
 We are using the ['pytest'](http://pytest.org/latest/) library for
 testing. The `py.test` application traverses the directory tree in which it is
 issued, looking for files with the names that match the pattern `test_*.py`
-(typically, something like our `Buzznaults/tests/test_Buzznaults.py`). Within each
+(typically, something like our `Buzznauts/tests/test_Buzznauts.py`). Within each
 of these files, it looks for functions with names that match the pattern
 `test_*`. Typically each function in the module would have a corresponding test .
 This is sometimes called 'unit testing', because it independently tests each atomic
@@ -91,21 +91,21 @@ in the code. Most typically, they will test for equality between an explicit
 calculation of some kind and a return of some function.
 
 To run the tests on the command line, change your present working directory to
-the top-level directory of the repository (e.g. `/home/eduardojdiniz/proj/Buzznaults`),
+the top-level directory of the repository (e.g. `/home/eduardojdiniz/proj/Buzznauts`),
 and type:
 
-    py.test Buzznaults
+    py.test Buzznauts
 
 This will exercise all of the tests in your code directory. If a test fails, you
 will see a message such as:
 
 
-    Buzznaults/tests/test_Buzznaults.py .F...
+    Buzznauts/tests/test_Buzznauts.py .F...
 
     =================================== FAILURES ===================================
     ...
 
-    Buzznaults/tests/test_Buzznaults.py:49: AssertionError
+    Buzznauts/tests/test_Buzznauts.py:49: AssertionError
     ====================== 1 failed, 4 passed in 0.82 seconds ======================
 
 This indicates to you that a test has failed.
@@ -165,9 +165,9 @@ figure out how to install your software on a particular system. For a
 small project such as this one, managing installation of the software
 modules and the data is rather simple.
 
-A `Buzznauls/version.py` contains all of the information needed for the
+A `Buzznauts/version.py` contains all of the information needed for the
 installation and for setting up the [PyPI
-page](https://pypi.python.org/pypi/Buzznaults) for the software.
+page](https://pypi.python.org/pypi/Buzznauts) for the software.
 This also makes it possible to install your software with using `pip` and
 `easy_install`, which are package managers for Python software. The
 `setup.py` file reads this information from there and passes it to the
