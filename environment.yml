@@ -17,8 +17,6 @@ dependencies:
     - scikit-learn
     - requests
     - h5py
-    - tqdm
-    - jupyterlab
     - pip
     - pip:
         - watermark
@@ -27,4 +25,5 @@ dependencies:
         - nb-clean
         - jupyterlab
         - jupyterlab_vim
+        - tqdm
         - ipywidgets
