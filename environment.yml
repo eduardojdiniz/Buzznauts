@@ -5,7 +5,7 @@ channels:
     - pytorch
 
 dependencies:
-    - python=3.8
+    - python=3.7
     - numpy
     - pytorch
     - torchvision
@@ -32,3 +32,5 @@ dependencies:
         - coveralls
         - pytest-cov
         - flake8
+        - nilearn
+        - decord
