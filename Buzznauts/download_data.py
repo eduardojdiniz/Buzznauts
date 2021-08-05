@@ -9,10 +9,19 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import zipfile
+import errno
 import shutil
 
 url = "https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1"
 data_path = "../Buzznauts/data"
+
+def copyanything(src, dst):
+        try:
+            shutil.copytree(src, dst)
+        except OSError as exc:
+            if exc.errno == errno.ENOTDIR:
+                shutil.copy(src, dst)
+            else: raise
 
 def download_Algonauts2021(**kwargs):
     """Function to download data from the Algonauts Challenge 2021.
@@ -54,13 +63,13 @@ def download_Algonauts2021(**kwargs):
     if not os.path.exists(videos_dir):
         os.makedirs(videos_dir)
         for f in os.listdir(tmp_videos_dir):
-            shutil.copy(op.join(tmp_videos_dir, f), videos_dir)
+            copyanything(op.join(tmp_videos_dir, f), videos_dir)
 
     tmp_fmri_dir = op.join(data_dir, 'participants_data_v2021')
     if not os.path.exists(fmri_dir):
         os.makedirs(fmri_dir)
         for f in os.listdir(tmp_fmri_dir):
-            shutil.copy(op.join(tmp_fmri_dir, f), fmri_dir)
+            copyanything(op.join(tmp_fmri_dir, f), fmri_dir)
 
     # Clean data directory
     shutil.rmtree(tmp_videos_dir)
