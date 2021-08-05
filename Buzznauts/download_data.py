@@ -16,12 +16,20 @@ url = "https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1"
 data_path = "../Buzznauts/data"
 
 def copyanything(src, dst):
-        try:
-            shutil.copytree(src, dst)
-        except OSError as exc:
-            if exc.errno == errno.ENOTDIR:
-                shutil.copy(src, dst)
-            else: raise
+    """Function to copy a source file (or dir) to a destination file (or dir).
+
+    Parameters
+    ----------
+    'src': str, source file (or dir) path.
+    'dst': str, destination path.
+
+    """
+    try:
+        shutil.copytree(src, dst)
+    except OSError as exc:
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dst)
+        else: raise
 
 def download_Algonauts2021(**kwargs):
     """Function to download data from the Algonauts Challenge 2021.
@@ -43,7 +51,7 @@ def download_Algonauts2021(**kwargs):
     data_url = kwargs.pop('data_url', url)
 
     if not os.path.exists(fmri_dir) and not os.path.exists(videos_dir):
-        print("...Data downloading...")
+        print("Data downloading...")
         r = requests.get(data_url, allow_redirects=True)
         # session = requests.Session()
         # retry = Retry(connect=3, backoff_factor=0.5)
