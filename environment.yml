@@ -15,7 +15,6 @@ dependencies:
     - pandas
     - scipy
     - scikit-learn
-    - requests
     - h5py
     - pip
     - pip:
@@ -34,3 +33,7 @@ dependencies:
         - flake8
         - nilearn
         - decord
+        - pyOpenSSL
+        - cryptography
+        - idna
+        - requests

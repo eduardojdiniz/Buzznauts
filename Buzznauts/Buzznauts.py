@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, print_function
 from .due import due, Doi
+from .download_data import download_Algonauts2021
 
 __all__ = []
 
