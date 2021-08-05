@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-url = " https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1"
-
 from __future__ import absolute_import, division, print_function
 import os
 import os.path as op
@@ -12,9 +10,9 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import zipfile
 import shutil
-import Buzznauts as buzz
 
-data_path = op.join(buzz.__path__[0], 'data')
+url = "https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1"
+data_path = "../Buzznauts/data"
 
 def download_Algonauts2021(**kwargs):
     """Function to download data from the Algonauts Challenge 2021.
@@ -22,7 +20,7 @@ def download_Algonauts2021(**kwargs):
     Parameters
     ----------
     kwargs: dict
-    'data_dir': str, data directory path. Default: ./data
+    'data_dir': str, data directory path. Default: ../Buzznauts/data
     'data_url'    : str, data url. Default:
         https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1
 
@@ -38,12 +36,13 @@ def download_Algonauts2021(**kwargs):
 
     if not os.path.exists(fmri_dir) and not os.path.exists(videos_dir):
         print("...Data downloading...")
-        session = requests.Session()
-        retry = Retry(connect=3, backoff_factor=0.5)
-        adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-        r = session.get(data_url, allow_redirects=True, verify=False)
+        r = requests.get(data_url, allow_redirects=True, verify=False)
+        # session = requests.Session()
+        # retry = Retry(connect=3, backoff_factor=0.5)
+        # adapter = HTTPAdapter(max_retries=retry)
+        # session.mount('http://', adapter)
+        # session.mount('https://', adapter)
+        # r = session.get(data_url, allow_redirects=True, verify=False)
         z = zipfile.ZipFile(io.BytesIO(r.content))
         z.extractall()
         print("...Done.")
