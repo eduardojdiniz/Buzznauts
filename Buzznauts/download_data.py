@@ -60,16 +60,10 @@ def download_Algonauts2021(**kwargs):
 
     # Move image files to permanent directory
     tmp_videos_dir = op.join(data_dir, 'AlgonautsVideos268_All_30fpsmax')
-    if not os.path.exists(videos_dir):
-        os.makedirs(videos_dir)
-        for f in os.listdir(tmp_videos_dir):
-            copyanything(op.join(tmp_videos_dir, f), videos_dir)
+    copyanything(op.join(tmp_videos_dir, videos_dir)
 
     tmp_fmri_dir = op.join(data_dir, 'participants_data_v2021')
-    if not os.path.exists(fmri_dir):
-        os.makedirs(fmri_dir)
-        for f in os.listdir(tmp_fmri_dir):
-            copyanything(op.join(tmp_fmri_dir, f), fmri_dir)
+    copyanything(op.join(tmp_fmri_dir), fmri_dir)
 
     # Clean data directory
     shutil.rmtree(tmp_videos_dir)
