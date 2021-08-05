@@ -3,13 +3,18 @@
 
 url = " https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1"
 
+from __future__ import absolute_import, division, print_function
 import os
+import os.path as op
 import io
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import zipfile
 import shutil
+import Buzznauts as buzz
+
+data_path = op.join(buzz.__path__[0], 'data')
 
 def download_Algonauts2021(**kwargs):
     """Function to download data from the Algonauts Challenge 2021.
@@ -23,12 +28,12 @@ def download_Algonauts2021(**kwargs):
 
     """
     cwd = os.getcwd()
-    data_dir = kwargs.pop('data_dir', os.path.join(cwd, "data"))
+    data_dir = kwargs.pop('data_dir', op.join(cwd, "data"))
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    videos_dir = os.path.join(data_dir, 'videos')
-    fmri_dir = os.path.join(data_dir, 'fmri')
+    videos_dir = op.join(data_dir, 'videos')
+    fmri_dir = op.join(data_dir, 'fmri')
     data_url = kwargs.pop('data_url', url)
 
     if not os.path.exists(fmri_dir) and not os.path.exists(videos_dir):
@@ -47,17 +52,17 @@ def download_Algonauts2021(**kwargs):
         return
 
     # Move image files to permanent directory
-    tmp_videos_dir = os.path.join(data_dir, 'AlgonautsVideos268_All_30fpsmax')
+    tmp_videos_dir = op.join(data_dir, 'AlgonautsVideos268_All_30fpsmax')
     if not os.path.exists(videos_dir):
         os.makedirs(videos_dir)
         for f in os.listdir(tmp_videos_dir):
-            shutil.copy(os.path.join(tmp_videos_dir, f), videos_dir)
+            shutil.copy(op.join(tmp_videos_dir, f), videos_dir)
 
-    tmp_fmri_dir = os.path.join(data_dir, 'participants_data_v2021')
+    tmp_fmri_dir = op.join(data_dir, 'participants_data_v2021')
     if not os.path.exists(fmri_dir):
         os.makedirs(fmri_dir)
         for f in os.listdir(tmp_fmri_dir):
-            shutil.copy(os.path.join(tmp_fmri_dir, f), fmri_dir)
+            shutil.copy(op.join(tmp_fmri_dir, f), fmri_dir)
 
     # Clean data directory
     shutil.rmtree(tmp_videos_dir)
