@@ -25,8 +25,7 @@ def download_Algonauts2021(**kwargs):
         https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1
 
     """
-    cwd = os.getcwd()
-    data_dir = kwargs.pop('data_dir', op.join(cwd, "data"))
+    data_dir = kwargs.pop('data_dir', data_path)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
@@ -36,15 +35,15 @@ def download_Algonauts2021(**kwargs):
 
     if not os.path.exists(fmri_dir) and not os.path.exists(videos_dir):
         print("...Data downloading...")
-        r = requests.get(data_url, allow_redirects=True, verify=False)
+        r = requests.get(data_url, allow_redirects=True)
         # session = requests.Session()
         # retry = Retry(connect=3, backoff_factor=0.5)
         # adapter = HTTPAdapter(max_retries=retry)
         # session.mount('http://', adapter)
         # session.mount('https://', adapter)
-        # r = session.get(data_url, allow_redirects=True, verify=False)
+        # r = session.get(data_url, allow_redirects=True)
         z = zipfile.ZipFile(io.BytesIO(r.content))
-        z.extractall()
+        z.extractall(data_dir)
         print("...Done.")
     else:
         print("Data are already downloaded. Nothing to be done.")
