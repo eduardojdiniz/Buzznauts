@@ -135,3 +135,4 @@ auto_examples/
 gen_api/
 scripts/Buzznauts/
 data/
+!/Buzznauts/data
