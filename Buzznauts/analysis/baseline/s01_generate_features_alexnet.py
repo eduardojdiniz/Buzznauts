@@ -11,9 +11,8 @@ import glob
 import urllib
 from Buzznauts.model.alexnet import load_alexnet
 from tqdm import tqdm
-import time
 from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA, IncrementalPCA
+from sklearn.decomposition import PCA
 from PIL import Image
 from decord import VideoReader
 from decord import cpu
@@ -133,7 +132,6 @@ def do_PCA_and_save(activations_dir, save_dir):
         x_train = x[:1000, :]
         x_test = x[1000:, :]
 
-        start_time = time.time()
         x_test = StandardScaler().fit_transform(x_test)
         x_train = StandardScaler().fit_transform(x_train)
         ipca = PCA(n_components=n_components, random_state=seed)
@@ -156,7 +154,7 @@ def main():
                         type=str)
     parser.add_argument('-sdir', '--save_dir',
                         help='saves processed features',
-                        default='../../../models/alexnet',
+                        default='../../../models/baseline',
                         type=str)
     args = vars(parser.parse_args())
 

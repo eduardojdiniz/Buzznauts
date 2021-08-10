@@ -115,15 +115,15 @@ def main():
 
     parser.add_argument('-rd', '--result_dir',
                         help='saves predicted fMRI activity',
-                        default='./results',
+                        default="../../../results",
                         type=str)
     parser.add_argument('-ad', '--activation_dir',
                         help='directory containing DNN activations',
-                        default='./alexnet/',
+                        default='../../../models/baseline',
                         type=str)
     parser.add_argument('-model', '--model',
                         help='model under which predicted fMRI will be saved',
-                        default='alexnet_devkit',
+                        default='baseline',
                         type=str)
     _help = 'layer from which activations will be used to train & predict fMRI'
     parser.add_argument('-l', '--layer',
@@ -146,7 +146,7 @@ def main():
                         type=str)
     parser.add_argument('-fd', '--fmri_dir',
                         help='directory containing fMRI activity',
-                        default='./participants_data_v2021', type=str)
+                        default='../../../data/stimuli/fmri', type=str)
     parser.add_argument('-v', '--visualize',
                         help='visualize whole brain in MNI space or not',
                         default=True,

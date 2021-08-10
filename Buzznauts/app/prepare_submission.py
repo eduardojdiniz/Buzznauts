@@ -5,14 +5,14 @@ import numpy as np
 import op as op
 import argparse
 import zipfile
-from utils import save_dict, load_dict
+from utils import save_dict
 
 def main():
     description = 'Prepares submission for Algonauts 2021'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-rd', '--result_dir',
                         help='contains predicted fMRI activity',
-                        default = './results/alexnet_devkit/layer_5',
+                        default = '../../results/baseline/layer_5',
                         type=str)
     _help= 'mini_track for all ROIs, full_track for whole brain (WB)'
     parser.add_argument('-t', '--track',
@@ -38,7 +38,7 @@ def main():
     for ROI in ROIs:
         ROI_results = {}
         for sub in subs:
-            ROI_result_file = op.join(result_dir, track, sub, ROI + "_test.npy")
+            ROI_result_file = op.join(result_dir, track, sub, ROI+"_test.npy")
             print("Result file path: ", ROI_result_file)
             if not op.exists(ROI_result_file):
                 print("----------- Warning : submission not ready -----------")
