@@ -4,23 +4,13 @@
 import numpy as np
 import os
 import op as op
-import glob
-import random
 import argparse
-import itertools
-import nibabel as nib
 from nilearn import plotting
-from tqdm import tqdm
-from sklearn.cross_decomposition import PLSRegression
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Ridge
 from sklearn.preprocessing import StandardScaler
 import torch
-import time
-import pickle
-from tqdm import tqdm
-from utils import vectorized_correlation, OLS_pytorch
-from utils import save_dict, load_dict, saveasnii
+from ols import OLS_pytorch
+from Buzznauts.utils import vectorized_correlation
+from Buzznauts.utils import load_dict, saveasnii
 
 
 def get_activations(activations_dir, layer_name):
@@ -135,7 +125,7 @@ def main():
                         help='model under which predicted fMRI will be saved',
                         default='alexnet_devkit',
                         type=str)
-    _help = 'layer from which activations will be used to train and predict fMRI'
+    _help = 'layer from which activations will be used to train & predict fMRI'
     parser.add_argument('-l', '--layer',
                         help=_help,
                         default='layer_5',
@@ -190,15 +180,14 @@ def main():
     fmri_dir = op.join(args['fmri_dir'], track)
 
     sub_fmri_dir = op.join(fmri_dir, sub)
-    results_dir = op.join(args['result_dir'], args['model'], args['layer'],
-                          track, sub)
+    results_dir = op.join(args['result_dir'], model, layer, track, sub)
     if not op.exists(results_dir):
         os.makedirs(results_dir)
 
     print("ROi is : ", ROI)
 
-    train_activations, test_activations = get_activations(
-        activation_dir, layer)
+    train_activations, test_activations = get_activations(activation_dir,
+                                                          layer)
     if track == "full_track":
         fmri_train_all, voxel_mask = get_fmri(sub_fmri_dir, ROI)
     else:
