@@ -138,7 +138,7 @@ def load_alexnet(pretrained=False, custom_keys=False, **kwargs):
         ckpth_urls = kwargs.pop('ckpth_urls', None)
         ckpth_filepath = kwargs.pop('ckpth', './models/alexnet/alexnet.pth')
         if ckpth_urls is None:
-            url = 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth'
+            url ='https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth'
             ckpth_urls = {'alexnet': url}
 
         if custom_keys:

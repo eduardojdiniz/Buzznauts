@@ -8,8 +8,7 @@ import argparse
 import os
 import os.path as op
 import glob
-import urllib
-from Buzznauts.model.alexnet import load_alexnet
+from Buzznauts.models.alexnet import load_alexnet
 from tqdm import tqdm
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -50,7 +49,7 @@ def sample_video_from_mp4(file, num_frames=16):
     images = list()
     vr = VideoReader(file, ctx=cpu(0))
     total_frames = len(vr)
-    indices = np.linspace(0, total_frames-1, num_frames, dtype=np.int)
+    indices = np.linspace(0, total_frames-1, num_frames, dtype=np.int32)
     for seg_ind in indices:
         images.append(Image.fromarray(vr[seg_ind].asnumpy()))
 
@@ -146,15 +145,16 @@ def do_PCA_and_save(activations_dir, save_dir):
 
 
 def main():
+    buzz_root = '/home/dinize@acct.upmchs.net/proj/Buzznauts'
     description = 'Feature Extraction from Alexnet and preprocessing using PCA'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-vdir', '--video_data_dir',
                         help='video data directory',
-                        default='../../../data/stimuli/videos',
+                        default=op.join(buzz_root, 'data/stimuli/videos'),
                         type=str)
     parser.add_argument('-sdir', '--save_dir',
                         help='saves processed features',
-                        default='../../../models/baseline',
+                        default=op.join(buzz_root, 'models/baseline'),
                         type=str)
     args = vars(parser.parse_args())
 
@@ -166,18 +166,17 @@ def main():
     video_list = sorted(glob.glob(video_dir + '/*.mp4'))
     print('Total Number of Videos: ', len(video_list))
 
-    # load Alexnet
-    # Download pretrained Alexnet from:
+    # Petrained Alexnet from:
     # https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth
-    # and save in the current directory
     checkpoint_path = op.join(save_dir, "alexnet.pth")
-    if not op.exists(checkpoint_path):
-        url = "https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth"
-        urllib.request.urlretrieve(url, checkpoint_path)
-    model = load_alexnet(checkpoint_path)
+    url = "https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth"
+    kwargs = {'ckpth_urls': {'alexnet': url}, 'ckpth': checkpoint_path}
+
+    # download pretrained model and save in the current directory
+    model = load_alexnet(pretrained=True, custom_keys=True, **kwargs)
 
     # get and save activations
-    activations_dir = op.join(save_dir)
+    activations_dir = op.join(save_dir, 'activations')
     if not op.exists(activations_dir):
         os.makedirs(activations_dir)
     print("-------------------Saving activations ----------------------------")

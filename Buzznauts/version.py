@@ -70,5 +70,5 @@ MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
 PACKAGE_DATA = {'Buzznauts': [pjoin('data', '*')]}
-REQUIRES = ["duecredit, numpy"]
-PYTHON_REQUIRES = ">= 3.8"
+REQUIRES = ["duecredit", "numpy"]
+PYTHON_REQUIRES = ">= 3.7"

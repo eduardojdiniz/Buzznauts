@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 import torch
 from ols import OLS_pytorch
 from Buzznauts.utils import vectorized_correlation
-from Buzznauts.utils import load_dict, saveasnii
+from Buzznauts.utils import load_dict, saveasnii, get_fmri
 
 
 def get_activations(activations_dir, layer_name):
@@ -44,36 +44,6 @@ def get_activations(activations_dir, layer_name):
     test_activations = scaler.fit_transform(test_activations)
 
     return train_activations, test_activations
-
-
-def get_fmri(fmri_dir, ROI):
-    """This function loads fMRI data into a numpy array for to a given ROI.
-
-    Parameters
-    ----------
-    fmri_dir : str
-        path to fMRI data.
-    ROI : str
-        name of ROI.
-
-    Returns
-    -------
-    np.array
-        matrix of dimensions #train_vids x #repetitions x #voxels containing
-        fMRI responses to train videos of a given ROI
-
-    """
-    # Loading ROI data
-    ROI_file = op.join(fmri_dir, ROI + ".pkl")
-    ROI_data = load_dict(ROI_file)
-
-    # averaging ROI data across repetitions
-    ROI_data_train = np.mean(ROI_data["train"], axis=1)
-    if ROI == "WB":
-        voxel_mask = ROI_data['voxel_mask']
-        return ROI_data_train, voxel_mask
-
-    return ROI_data_train
 
 
 def predict_fmri_fast(train_activations, test_activations,

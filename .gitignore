@@ -136,3 +136,5 @@ gen_api/
 scripts/Buzznauts/
 data/
 !/Buzznauts/data
+models/
+!/Buzznauts/models

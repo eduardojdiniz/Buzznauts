@@ -57,14 +57,14 @@ def download_Algonauts2021(**kwargs):
 
     """
     data_dir = kwargs.pop('data_dir', data_path)
-    if not os.path.exists(data_dir):
+    if not op.exists(data_dir):
         os.makedirs(data_dir)
 
     videos_dir = op.join(data_dir, 'stimuli', 'mp4')
     fmri_dir = op.join(data_dir, 'fmri')
     data_url = kwargs.pop('data_url', url)
 
-    if not os.path.exists(fmri_dir) and not os.path.exists(videos_dir):
+    if not op.exists(fmri_dir) and not op.exists(videos_dir):
         print("Data downloading...")
         session = requests.Session()
         retry = Retry(connect=3, backoff_factor=0.5)
@@ -151,7 +151,7 @@ def from_mp4_to_folder(mp4, folder, num_frames=None):
     """
     mp4_name = op.splitext(op.basename(mp4))[0]
     video_folder = op.join(folder, mp4_name)
-    if not os.path.exists(video_folder):
+    if not op.exists(video_folder):
         os.makedirs(video_folder)
 
         images, num_frames = get_frames_from_mp4(mp4, num_frames=num_frames)
