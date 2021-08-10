@@ -18,6 +18,8 @@ from decord import VideoReader
 from decord import cpu
 import numpy as np
 import Buzznauts as buzz
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import ImageGrid
 
 
 url = "https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1"
@@ -222,6 +224,36 @@ def create_annotations_file(videoframe_metadata, videoframe_src):
             f.write(metadata)
 
     return annotations_file
+
+
+def plot_video(rows, cols, frame_list, plot_width, plot_height):
+    """This function display frames from a video in a grid of axes
+
+    Parameters
+    ----------
+    rows : int
+        Number of rows in the grid of axes
+    cols : int
+        Number of columns in the grid of axes
+    frame_list : list[PIL.Image]
+        List of PIL images
+    plot_width : float
+        Width of the figure
+    plot_height : float
+        Height of the figure
+    """
+    fig = plt.figure(figsize=(plot_width, plot_height))
+    grid = ImageGrid(fig, 111,  # similar to subplot(111)
+                     nrows_ncols=(rows, cols),  # creates 2x2 grid of axes
+                     axes_pad=0.3,  # pad between axes in inch.
+                     )
+
+    for index, (ax, im) in enumerate(zip(grid, frame_list)):
+        # Iterating over the grid returns the Axes.
+        ax.imshow(im)
+        ax.set_title(index)
+    plt.show()
+
 
 if __name__ == "__main__":
     download_Algonauts2021()
