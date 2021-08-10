@@ -222,7 +222,8 @@ class VideoFrameDataset(torch.utils.data.Dataset):
 
         Parameters
         ----------
-            record : VideoRecord denoting a video sample
+            record : VideoRecord
+                VideoRecord denoting a video sample
 
         Returns
         -------
