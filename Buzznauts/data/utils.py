@@ -23,7 +23,8 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 
 
 url = "https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1"
-data_path = op.join( op.dirname(buzz.__path__[0]), 'data')
+#data_path = op.join( op.dirname(buzz.__path__[0]), 'data')
+data_path = "/home/dinize@acct.upmchs.net/proj/Buzznauts/data"
 videos_path = op.join(data_path, "stimuli", "videos")
 frames_path = op.join(data_path, "stimuli", "frames")
 
