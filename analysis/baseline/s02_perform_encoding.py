@@ -3,14 +3,14 @@
 
 import numpy as np
 import os
-import op as op
+import os.path as op
 import argparse
-from nilearn import plotting
 from sklearn.preprocessing import StandardScaler
 import torch
-from ols import OLS_pytorch
-from Buzznauts.utils import vectorized_correlation
+from Buzznauts.models.baseline.ols import OLS_pytorch
+from Buzznauts.utils import vectorized_correlation, visualize_activity
 from Buzznauts.utils import load_dict, saveasnii, get_fmri
+from tqdm import tqdm
 
 
 def get_activations(activations_dir, layer_name):
@@ -83,17 +83,19 @@ def main():
     description = 'Encoding model analysis for Algonauts 2021'
     parser = argparse.ArgumentParser(description=description)
 
+    buzz_root = '/home/dinize@acct.upmchs.net/proj/Buzznauts'
+    baseline = op.join(buzz_root, 'models/baseline')
     parser.add_argument('-rd', '--result_dir',
                         help='saves predicted fMRI activity',
-                        default="../../../results",
+                        default=op.join(baseline, 'results'),
                         type=str)
     parser.add_argument('-ad', '--activation_dir',
                         help='directory containing DNN activations',
-                        default='../../../models/baseline',
+                        default=op.join(baseline, 'activations'),
                         type=str)
     parser.add_argument('-model', '--model',
                         help='model under which predicted fMRI will be saved',
-                        default='baseline',
+                        default='alexnet',
                         type=str)
     _help = 'layer from which activations will be used to train & predict fMRI'
     parser.add_argument('-l', '--layer',
@@ -116,7 +118,8 @@ def main():
                         type=str)
     parser.add_argument('-fd', '--fmri_dir',
                         help='directory containing fMRI activity',
-                        default='../../../data/stimuli/fmri', type=str)
+                        default=op.join(buzz_root, 'data/fmri'),
+                        type=str)
     parser.add_argument('-v', '--visualize',
                         help='visualize whole brain in MNI space or not',
                         default=True,
@@ -143,8 +146,10 @@ def main():
 
     if ROI == "WB":
         track = "full_track"
+        use_gpu = False # too large to fit in memory
     else:
         track = "mini_track"
+        use_gpu = False # too large to fit in memory
 
     activation_dir = op.join(args['activation_dir'], 'pca_100')
     fmri_dir = op.join(args['fmri_dir'], track)
@@ -181,37 +186,36 @@ def main():
 
     print("number of voxels is ", num_voxels)
     i = 0
-    while i < num_voxels - batch_size:
-        j = i + batch_size
-        pred_fmri[:, i:j] = predict_fmri_fast(train_activations,
-                                              test_activations,
-                                              fmri_train[:, i: j],
-                                              use_gpu=use_gpu)
-        i = j
-        print((100*i) // num_voxels, " percent complete")
+    with tqdm(total=100) as pbar:
+        while i < num_voxels - batch_size:
+            j = i + batch_size
+            pred_fmri[:, i:j] = predict_fmri_fast(train_activations,
+                                                test_activations,
+                                                fmri_train[:, i:j],
+                                                use_gpu=use_gpu)
+            i = j
+            pbar.update((100*i) // num_voxels)
     pred_fmri[:, i:] = predict_fmri_fast(train_activations,
                                          test_activations,
-                                         fmri_train[:, i:j],
+                                         fmri_train[:, i:i + batch_size],
                                          use_gpu=use_gpu)
 
     if mode == 'val':
         score = vectorized_correlation(fmri_test, pred_fmri)
-        print("--------------------------------------------------------------")
         print("Mean correlation for ROI : ", ROI, "in ", sub, " is :",
               round(score.mean(), 3))
 
         # result visualization for whole brain (full_track)
         if track == "full_track" and visualize_results:
-            visual_mask_3D = np.zeros((78, 93, 71))
-            visual_mask_3D[voxel_mask == 1] = score
-            brain_mask = './example.nii'
+            brain_mask = op.join(buzz_root, 'data/fmri/example.nii')
             nii_save_path = op.join(results_dir, ROI + '_val.nii')
-            saveasnii(brain_mask, nii_save_path, visual_mask_3D)
-            view = plotting.view_img_on_surf(nii_save_path,
-                                             threshold=None,
-                                             surf_mesh='fsaverage',
-                                             title='Correlation for sub' + sub,
-                                             colorbar=False)
+
+            view_args = {'brain_mask': brain_mask,
+                         'nii_save_path': nii_save_path,
+                         'score': score,
+                         'voxel_mask': voxel_mask}
+
+            view = vizualize_activity(sub, **view_args)
             view_save_path = op.join(results_dir, ROI + '_val.html')
             view.save_as_html(view_save_path)
             print("Results saved in this directory: ", results_dir)
@@ -219,7 +223,6 @@ def main():
 
     np.save(pred_fmri_save_path, pred_fmri)
 
-    print("------------------------------------------------------------------")
     print("ROI done : ", ROI)
 
 

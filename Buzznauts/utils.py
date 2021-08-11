@@ -5,7 +5,13 @@ import nibabel as nib
 import pickle
 import os.path as op
 import numpy as np
-from nilearn import plotting
+import warnings
+
+# Ignore FutureWarnings from nilearn
+with warnings.catch_warnings():
+    # ignore all caught warnings
+    warnings.filterwarnings("ignore")
+    from nilearn import plotting
 
 
 def save_dict(di_, filename_):
@@ -76,18 +82,46 @@ def get_fmri(fmri_dir, ROI):
     return ROI_data_train
 
 
-def visualize_activity(vid_id, sub):
-    fmri_dir = '../../data/stimuli/fmri'
-    track = "full_track"
-    results_dir = '../../results/baseline'
-    track_dir = op.join(fmri_dir, track)
-    sub_fmri_dir = op.join(track_dir, sub)
-    fmri_train_all, voxel_mask = get_fmri(sub_fmri_dir, "WB")
-    visual_mask_3D = np.zeros((78,93,71))
-    visual_mask_3D[voxel_mask==1] = fmri_train_all[vid_id, :]
-    brain_mask = '../../data/stimuli/fmri/example.nii'
+def visualize_activity(sub, **kwargs):
+    vid_id = kwargs.pop('vid_id', 0)
+
+    buzz_root = '/home/dinize@acct.upmchs.net/proj/Buzznauts'
+    fmri_dir = op.join(buzz_root, 'data/fmri')
+    track_dir = kwargs.pop('track_dir', op.join(fmri_dir, 'full_track'))
+
+    brain_mask = kwargs.pop('brain_mask', op.join(fmri_dir, 'example.nii'))
+
+    results_dir = op.join(buzz_root, 'models/baseline/results')
     nii_save_path =  op.join(results_dir, 'vid_activity.nii')
+    nii_save_path = kwargs.pop('nii_save_path', nii_save_path)
+
+    # Plotting parameters
+    threshold = kwargs.pop('threshold', None)
+    surf_mesh = kwargs.pop('surf_mesh', 'fsaverage')
+    title = kwargs.pop('title', 'fMRI response for sub' + sub)
+    plot_abs = kwargs.pop('plot_abs', False)
+    display_mode = kwargs.pop('display_mode', 'lyr')
+    colobar = kwargs.pop('colobar', True)
+
+    # Subject parameters
+    score = kwargs.pop('score', None)
+    voxel_mask = kwargs.pop('voxel_mask', None)
+
+    visual_mask_3D = np.zeros((78,93,71))
+    if score is None:
+        sub_fmri_dir = op.join(track_dir, sub)
+        fmri_train_all, voxel_mask = get_fmri(sub_fmri_dir, "WB")
+        visual_mask_3D[voxel_mask==1] = fmri_train_all[vid_id, :]
+    else:
+        visual_mask_3D[voxel_mask==1] = score
+
     saveasnii(brain_mask, nii_save_path, visual_mask_3D)
-    plotting.plot_glass_brain(nii_save_path, title = 'fMRI response',
-                              plot_abs = False, display_mode = 'lyr',
-                              colorbar = True)
+
+    view = plotting.view_img_on_surf(nii_save_path,
+                                    threshold = threshold,
+                                    surf_mesh = surf_mesh,
+                                    title = title,
+                                    plot_abs = plot_abs,
+                                    display_mode = display_mode,
+                                    colorbar = colobar)
+    return view

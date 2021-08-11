@@ -8,7 +8,7 @@ import argparse
 import os
 import os.path as op
 import glob
-from Buzznauts.models.alexnet import load_alexnet
+from Buzznauts.models.baseline.alexnet import load_alexnet
 from tqdm import tqdm
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -183,7 +183,7 @@ def main():
     get_activations_and_save(model, video_list, activations_dir)
 
     # preprocessing using PCA and save
-    pca_dir = op.join(save_dir, 'pca_100')
+    pca_dir = op.join(activations_dir, 'pca_100')
     print("-----------------------Performing  PCA----------------------------")
     do_PCA_and_save(activations_dir, pca_dir)
 

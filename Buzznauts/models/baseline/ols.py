@@ -29,7 +29,8 @@ class OLS_pytorch(object):
         Xty = torch.matmul(X.t(), y.unsqueeze(2))
         XtX = XtX.unsqueeze(0)
         XtX = torch.repeat_interleave(XtX, y.shape[0], dim=0)
-        betas_cholesky, _ = torch.solve(Xty, XtX)
+        #betas_cholesky, _ = torch.linalg.solve(Xty, XtX)
+        betas_cholesky = torch.linalg.solve(XtX, Xty)
 
         self.coefficients = betas_cholesky
 
