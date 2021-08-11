@@ -9,6 +9,7 @@ import os
 import os.path as op
 import glob
 from Buzznauts.models.baseline.alexnet import load_alexnet
+from Buzznauts.data.videodataframe import VideoFrameDataset, ImglistToTensor
 from tqdm import tqdm
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -27,13 +28,13 @@ np.random.seed(seed)
 random.seed(seed)
 
 
-def sample_video_from_mp4(file, num_frames=16):
+def sample_video_from_mp4(mp4_file, num_frames=16):
     """This function takes a mp4 video file as input and returns a list of
     uniformly sampled frames (PIL Image).
 
     Parameters
     ----------
-    file : str
+    mp4_file : str
         path to mp4 video file
     num_frames : int
         how many frames to select using uniform frame sampling.
@@ -47,7 +48,7 @@ def sample_video_from_mp4(file, num_frames=16):
 
     """
     images = list()
-    vr = VideoReader(file, ctx=cpu(0))
+    vr = VideoReader(mp4_file, ctx=cpu(0))
     total_frames = len(vr)
     indices = np.linspace(0, total_frames-1, num_frames, dtype=np.int32)
     for seg_ind in indices:
