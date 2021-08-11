@@ -146,10 +146,8 @@ def main():
 
     if ROI == "WB":
         track = "full_track"
-        use_gpu = False # too large to fit in memory
     else:
         track = "mini_track"
-        use_gpu = False # too large to fit in memory
 
     activation_dir = op.join(args['activation_dir'], 'pca_100')
     fmri_dir = op.join(args['fmri_dir'], track)
