@@ -178,9 +178,6 @@ def create_videoframe_dataset(videos_src, videoframe_dst):
     videoframe_dst: str
         Folder that will hold the videoframe dataset
 
-    Returns -------
-    annotations_file: str
-        path to the annotations.txt file that enumerates each video sample
     """
     video_list = glob.glob(videos_src + '/*.mp4')
     video_list.sort()
@@ -193,15 +190,19 @@ def create_videoframe_dataset(videos_src, videoframe_dst):
     video_metadata = list()
     for mp4 in video_list:
         video_folder, num_frames = from_mp4_to_folder(mp4, videoframe_dst)
+        video_name = op.basename(video_folder)
         video_metadata.append(
-            f"{op.basename(video_folder)} 0 {num_frames-1} 0\n")
+            f"{video_name} 0 {num_frames-1} {video_name}\n")
 
-    annotations_file = create_annotations_file(video_metadata, videoframe_dst)
+    annotations_train = op.join(videoframe_dst, 'annotations_train.txt')
+    annotations_test = op.join(videoframe_dst, 'annotations_test.txt')
+    annotations = op.join(videoframe_dst, 'annotations.txt')
+    create_annotations(video_metadata[:1000], annotations_train)
+    create_annotations(video_metadata[1000:], annotations_test)
+    create_annotations(video_metadata, annotations)
 
-    return annotations_file
 
-
-def create_annotations_file(videoframe_metadata, videoframe_src):
+def create_annotations(videoframe_metadata, annotations_file):
     """This function creates an `annotations.txt` file for a videoframe folder
     containing video data, where each video have its own folder, in which the
     frames of the videos are saved as an RGB image file.
@@ -211,20 +212,13 @@ def create_annotations_file(videoframe_metadata, videoframe_src):
     videoframe_metadata : list[str]
         list where each item holds a string with the videoframe metadata in the
         format 'PATH START_FRAME END_FRAME LABEL_ID'
-    videoframe_src : str
-        root directory containing a videoframe dataset
-
-    Returns
-    -------
     annotations_file : str
         path to the annotations.txt file that enumerates each video sample
+
     """
-    annotations_file = op.join(videoframe_src, 'annotations.txt')
     with open(annotations_file, 'w') as f:
         for metadata in tqdm(videoframe_metadata):
             f.write(metadata)
-
-    return annotations_file
 
 
 def plot_video(rows, cols, frame_list, plot_width, plot_height):

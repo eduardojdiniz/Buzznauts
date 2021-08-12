@@ -57,44 +57,62 @@ def sample_video_from_mp4(mp4_file, num_frames=16):
     return images, num_frames
 
 
-def get_activations_and_save(model, video_list, activations_dir):
+def get_activations_and_save(model, videos_dir, activations_dir):
     """Generates Alexnet features and save them in a specified directory.
 
     Parameters
     ----------
-    model :
-        model : AlexNet
-            AlexNet Pytorch model
-    video_list : list
-        the list contains path to all videos.
+    model : AlexNet
+        AlexNet Pytorch model
+    videos_dir : str
+        path to video frames folder
     activations_dir : str
         save path for extracted features.
 
     """
-    # Resize and normalize transform for images
-    resize_normalize = trn.Compose([
-            trn.Resize((224, 224)),
-            trn.ToTensor(),
-            trn.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+    # Path to file with the videos' metadata
+    annotation_file = op.join(videos_dir, 'annotations.txt')
 
-    # for all videos in the list
-    for video_file in tqdm(video_list):
-        vid, num_frames = sample_video_from_mp4(video_file)
-        video_filename = os.path.split(video_file)[-1].split(".")[0]
-        activations = []
-        # for all frames in video generate and save activations
-        for frame, img in enumerate(vid):
-            input_img = torch.Tensor(resize_normalize(img).unsqueeze(0))
-            if torch.cuda.is_available():
-                input_img = input_img.cuda()
-            x = model.forward(input_img)
-            for i, feat in enumerate(x):
-                if frame == 0:
-                    activations.append(feat.data.cpu().numpy().ravel())
-                else:
-                    activations[i] += feat.data.cpu().numpy().ravel()
+    # Resize and normalize transform for video frames
+    preprocess = trn.Compose([
+            ImglistToTensor(),
+            trn.Resize(224),
+            trn.CenterCrop(224),
+            trn.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+
+    dataset = VideoFrameDataset(
+        root_path=videos_dir,
+        annotationfile_path=annotation_file,
+        num_segments=16,
+        frames_per_segment=1,
+        imagefile_template='img_{:05d}.jpg',
+        transform=preprocess,
+        random_shift=True,
+        test_mode=False
+    )
+
+    dataloader = torch.utils.data.DataLoader(
+        dataset=dataset,
+        batch_size=1,
+        shuffle=False,
+        num_workers=2,
+        pin_memory=False)
+
+    # Function to convert a tensor to numpy array
+    to_numpy = lambda x: x.data.cpu().numpy().ravel()
+
+    # Each batch holds one video
+    # loop through each video and save average activation for the frames
+    for batch, filenames in tqdm(dataloader):
+        num_frames = batch.shape[1]
+        if torch.cuda.is_available():
+            batch = batch.cuda()
+        x = model(batch.squeeze(0))
+        activations = [to_numpy(torch.sum(feat, dim=0)) for feat in x]
+        # Save the average activation for each layer
         for layer in range(len(activations)):
-            filename = video_filename + "_layer_" + str(layer+1) + ".npy"
+            filename = filenames[0] + "_layer_" + str(layer+1) + ".npy"
             save_path = os.path.join(activations_dir, filename)
             avg_layer_activation = activations[layer]/float(num_frames)
             np.save(save_path, avg_layer_activation)
@@ -149,9 +167,9 @@ def main():
     buzz_root = '/home/dinize@acct.upmchs.net/proj/Buzznauts'
     description = 'Feature Extraction from Alexnet and preprocessing using PCA'
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-vdir', '--video_data_dir',
-                        help='video data directory',
-                        default=op.join(buzz_root, 'data/stimuli/videos'),
+    parser.add_argument('-vdir', '--video_frames_dir',
+                        help='video frames data directory',
+                        default=op.join(buzz_root, 'data/stimuli/frames'),
                         type=str)
     parser.add_argument('-sdir', '--save_dir',
                         help='saves processed features',
@@ -163,9 +181,7 @@ def main():
     if not op.exists(save_dir):
         os.makedirs(save_dir)
 
-    video_dir = args['video_data_dir']
-    video_list = sorted(glob.glob(video_dir + '/*.mp4'))
-    print('Total Number of Videos: ', len(video_list))
+    video_dir = args['video_frames_dir']
 
     # Petrained Alexnet from:
     # https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth
@@ -181,7 +197,7 @@ def main():
     if not op.exists(activations_dir):
         os.makedirs(activations_dir)
     print("-------------------Saving activations ----------------------------")
-    get_activations_and_save(model, video_list, activations_dir)
+    get_activations_and_save(model, video_dir, activations_dir)
 
     # preprocessing using PCA and save
     pca_dir = op.join(activations_dir, 'pca_100')

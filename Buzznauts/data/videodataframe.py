@@ -54,10 +54,10 @@ class VideoRecord(object):
     def label(self):
         # just one label_id
         if len(self._data) == 4:
-            return int(self._data[3])
+            return self._data[3]
         # sample associated with multiple labels
         else:
-            return [int(label_id) for label_id in self._data[3:]]
+            return [label_id for label_id in self._data[3:]]
 
 
 class VideoFrameDataset(torch.utils.data.Dataset):
