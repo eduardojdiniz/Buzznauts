@@ -99,8 +99,6 @@ def visualize_activity(sub, **kwargs):
     threshold = kwargs.pop('threshold', None)
     surf_mesh = kwargs.pop('surf_mesh', 'fsaverage')
     title = kwargs.pop('title', 'fMRI response for sub' + sub)
-    plot_abs = kwargs.pop('plot_abs', False)
-    display_mode = kwargs.pop('display_mode', 'lyr')
     colobar = kwargs.pop('colobar', True)
 
     # Subject parameters
@@ -121,7 +119,5 @@ def visualize_activity(sub, **kwargs):
                                     threshold = threshold,
                                     surf_mesh = surf_mesh,
                                     title = title,
-                                    plot_abs = plot_abs,
-                                    display_mode = display_mode,
                                     colorbar = colobar)
     return view

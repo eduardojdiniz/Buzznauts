@@ -77,7 +77,6 @@ def get_activations_and_save(model, videos_dir, activations_dir):
     preprocess = trn.Compose([
             ImglistToTensor(),
             trn.Resize(224),
-            trn.CenterCrop(224),
             trn.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 

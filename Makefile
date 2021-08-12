@@ -1,7 +1,7 @@
 # Targets that do not create files
 .PHONY: all clean_baseline flake8 test baseline
 
-VDIR?='data/stimuli/videos'
+VDIR?='data/stimuli/frames'
 SDIR?='models/baseline'
 TRACK?='all'
 FMRI_DIR?='data/fmri'

@@ -78,6 +78,9 @@ def predict_fmri_fast(train_activations, test_activations,
     fmri_pred_test = reg.predict(test_activations)
     return fmri_pred_test
 
+def get_score(fmri_test, pred_fmri)
+    score = vectorized_correlation(fmri_test, pred_fmri)
+    return round(score.mean(), 3)
 
 def main():
     description = 'Encoding model analysis for Algonauts 2021'
@@ -102,10 +105,6 @@ def main():
                         help=_help,
                         default='layer_5',
                         type=str)
-    parser.add_argument(
-        '-sub', '--sub',
-        help='subject number from which fMRI data will be used',
-        default='sub04', type=str)
     parser.add_argument('-r', '--roi',
                         help='brain region from which fMRI data will be used',
                         default='EBA',
@@ -132,12 +131,17 @@ def main():
     args = vars(parser.parse_args())
 
     mode = args['mode']
-    sub = args['sub']
     ROI = args['roi']
     model = args['model']
     layer = args['layer']
     visualize_results = args['visualize']
     batch_size = args['batch_size']
+
+    # List of subjects
+    subs = ['sub01', 'sub02', 'sub03', 'sub04', 'sub05',
+            'sub06', 'sub07', 'sub08', 'sub09', 'sub10']
+    # Subjects' scores
+    sub_scores = {sub: 0.0 for sub in subs}
 
     if torch.cuda.is_available():
         use_gpu = True
@@ -199,9 +203,10 @@ def main():
                                          use_gpu=use_gpu)
 
     if mode == 'val':
-        score = vectorized_correlation(fmri_test, pred_fmri)
-        print("Mean correlation for ROI : ", ROI, "in ", sub, " is :",
-              round(score.mean(), 6))
+        for sub in subs:
+            sub_scores[sub] = get_mean_score(fmri_test, pred_fmri)
+
+        print("Mean correlation for ROI : ", ROI, "in ", sub, " is :", score)
 
         # result visualization for whole brain (full_track)
         if track == "full_track" and visualize_results:
