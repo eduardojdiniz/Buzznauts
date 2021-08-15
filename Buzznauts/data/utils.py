@@ -32,8 +32,8 @@ with warnings.catch_warnings():
 
 
 url = "https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1"
-#data_path = op.join( op.dirname(buzz.__path__[0]), 'data')
-data_path = "/home/dinize@acct.upmchs.net/proj/Buzznauts/data"
+buzz_root = op.dirname(buzz.__path__[0])
+data_path = op.join(buzz_root, 'data')
 videos_path = op.join(data_path, "stimuli", "videos")
 frames_path = op.join(data_path, "stimuli", "frames")
 
@@ -260,7 +260,6 @@ def plot_video_frames(rows, cols, frame_list, plot_width, plot_height):
 
 
 def visualize_activity_glass(sub, **kwargs):
-    buzz_root = '/home/dinize@acct.upmchs.net/proj/Buzznauts'
 
     # Data parameters
     video_id = kwargs.pop('video_id', 0)
@@ -314,7 +313,6 @@ def visualize_activity_glass(sub, **kwargs):
 
 
 def visualize_activity_surf(sub, **kwargs):
-    buzz_root = '/home/dinize@acct.upmchs.net/proj/Buzznauts'
 
     # Data parameters
     video_id = kwargs.pop('video_id', 0)
