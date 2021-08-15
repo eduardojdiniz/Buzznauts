@@ -229,21 +229,20 @@ def predict_fmri_fast(features_train, features_test,
     return fmri_pred_test
 
 
-def perform_encoding(model_dir, fmri_dir, sub, layer, ROI="WB", mode="val",
-                     visualize_results=True, batch_size=1000, device=None):
+def perform_encoding(activations_dir, results_dir, fmri_dir, sub, layer,
+                     ROI="WB", mode="val", visualize_results=True,
+                     batch_size=1000, device=None):
 
     if device is None:
         device = set_device()
 
     track = "full_track" if ROI == "WB" else "mini_track"
-    activations_dir = op.join(model_dir, 'activations')
-    pca_dir = op.join(activations_dir, 'pca_100')
     sub_fmri_dir = op.join(fmri_dir, track, sub)
-    results_dir = op.join(model_dir, "results", "alexnet", layer, track, sub)
+    results_dir = op.join(results_dir, layer, track, sub)
     if not op.exists(results_dir):
         os.makedirs(results_dir)
 
-    features_train, features_test = get_activations(pca_dir, layer)
+    features_train, features_test = get_activations(activations_dir, layer)
     if track == "full_track":
         fmri_data, voxel_mask = get_fmri(sub_fmri_dir, ROI)
     else:
