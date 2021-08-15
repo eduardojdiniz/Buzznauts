@@ -29,6 +29,9 @@ test:
 # Rule to remove all generated output by baseline model
 clean_baseline:
 	rm -rf models/baseline
+	rm -rf visualizations/baseline
+	rm -rf results/baseline
+	rm -rf submission/baseline
 
 $(FEATURES_BASELINE):
 	python analysis/baseline/s01_generate_features_alexnet.py -vdir $(VDIR) -sdir $(SDIR)
