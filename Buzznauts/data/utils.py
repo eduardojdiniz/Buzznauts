@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, print_function
 import os
 import os.path as op
+from pathlib import Path
 import io
 import glob
 from tqdm import tqdm
@@ -18,8 +19,16 @@ from decord import VideoReader
 from decord import cpu
 import numpy as np
 import Buzznauts as buzz
+from Buzznauts.utils import get_fmri, saveasnii
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
+
+# Ignore FutureWarnings from nilearn
+import warnings
+with warnings.catch_warnings():
+    # ignore all caught warnings
+    warnings.filterwarnings("ignore")
+    from nilearn import plotting
 
 
 url = "https://www.dropbox.com/s/agxyxntrbwko7t1/participants_data.zip?dl=1"
@@ -221,7 +230,7 @@ def create_annotations(videoframe_metadata, annotations_file):
             f.write(metadata)
 
 
-def plot_video(rows, cols, frame_list, plot_width, plot_height):
+def plot_video_frames(rows, cols, frame_list, plot_width, plot_height):
     """This function display frames from a video in a grid of axes
 
     Parameters
@@ -248,6 +257,109 @@ def plot_video(rows, cols, frame_list, plot_width, plot_height):
         ax.imshow(im)
         ax.set_title(index)
     plt.show()
+
+
+def visualize_activity_glass(sub, **kwargs):
+    buzz_root = '/home/dinize@acct.upmchs.net/proj/Buzznauts'
+
+    # Data parameters
+    video_id = kwargs.pop('video_id', 0)
+    fmri_dir = kwargs.pop('fmri_dir', op.join(buzz_root, 'data/fmri'))
+    brain_mask = kwargs.pop('brain_mask', op.join(fmri_dir, 'example.nii'))
+    track = kwargs.pop('track', 'full_track')
+    roi = kwargs.pop('roi', 'WB')
+
+    save_dir = op.join(buzz_root, 'models/baseline/results/alexnet/layer_5')
+    save_dir = kwargs.pop('save_dir', save_dir)
+
+    nii_save_path = op.join(save_dir, track, sub,
+                            f'vid_{video_id+1}_roi_{roi}_activity.nii')
+    jpg_save_path = op.join(save_dir, track, sub,
+                            f'vid_{video_id+1}_roi_{roi}_activity_glass.jpg')
+    nii_save_path = kwargs.pop('nii_save_path', nii_save_path)
+
+    if not op.exists(nii_save_path):
+        os.makedirs(Path(nii_save_path).parent.absolute())
+
+    # Plotting parameters
+    plot_abs = kwargs.pop('plot_abs', False)
+    display_mode = kwargs.pop('display_mode', 'lyr')
+    colobar = kwargs.pop('colobar', True)
+
+    # Subject parameters
+    score = kwargs.pop('score', None)
+    voxel_mask = kwargs.pop('voxel_mask', None)
+
+    visual_mask_3D = np.zeros((78,93,71))
+    if score is None:
+        track_dir = op.join(fmri_dir, track)
+        sub_fmri_dir = op.join(track_dir, sub)
+        fmri_data, voxel_mask = get_fmri(sub_fmri_dir, "WB")
+        visual_mask_3D[voxel_mask==1] = fmri_data[video_id, :]
+    else:
+        visual_mask_3D[voxel_mask==1] = score
+
+    saveasnii(brain_mask, nii_save_path, visual_mask_3D)
+
+    title = f'fMRI response for {sub} watching video {video_id+1}'
+    view = plotting.plot_glass_brain(nii_save_path,
+                                    title = title,
+                                    plot_abs = plot_abs,
+                                    display_mode = display_mode,
+                                    colorbar = colobar)
+    view.savefig(jpg_save_path)
+    view.close()
+    return jpg_save_path
+
+
+def visualize_activity_surf(sub, **kwargs):
+    buzz_root = '/home/dinize@acct.upmchs.net/proj/Buzznauts'
+
+    # Data parameters
+    video_id = kwargs.pop('video_id', 0)
+    fmri_dir = kwargs.pop('fmri_dir', op.join(buzz_root, 'data/fmri'))
+    brain_mask = kwargs.pop('brain_mask', op.join(fmri_dir, 'example.nii'))
+    track = kwargs.pop('track', 'full_track')
+    roi = kwargs.pop('roi', 'WB')
+
+    save_dir = op.join(buzz_root, 'models/baseline/results/alexnet/layer_5')
+    save_dir = kwargs.pop('save_dir', save_dir)
+
+    nii_save_path = op.join(save_dir, track, sub, f'{roi}_activity.nii')
+    nii_save_path = kwargs.pop('nii_save_path', nii_save_path)
+
+    html_save_path = op.join(save_dir, track, sub, f'{roi}_activity_surf.html')
+    html_save_path = kwargs.pop('html_save_path', html_save_path)
+
+    # Plotting parameters
+    threshold = kwargs.pop('threshold', None)
+    surf_mesh = kwargs.pop('surf_mesh', 'fsaverage')
+    colobar = kwargs.pop('colobar', True)
+    title = f'fMRI response for {sub}'
+    title = kwargs.pop('title', title)
+
+    # Subject parameters
+    score = kwargs.pop('score', None)
+    voxel_mask = kwargs.pop('voxel_mask', None)
+
+    visual_mask_3D = np.zeros((78,93,71))
+    if score is None:
+        sub_fmri_dir = op.join(track_dir, sub)
+        fmri_data, voxel_mask = get_fmri(sub_fmri_dir, "WB")
+        visual_mask_3D[voxel_mask==1] = fmri_data[vid_id, :]
+    else:
+        visual_mask_3D[voxel_mask==1] = score
+
+    saveasnii(brain_mask, nii_save_path, visual_mask_3D)
+
+    view = plotting.view_img_on_surf(nii_save_path,
+                                    threshold = threshold,
+                                    surf_mesh = surf_mesh,
+                                    title = title,
+                                    colorbar = colobar)
+    view.save_as_html(html_save_path)
+
+    return html_save_path
 
 
 if __name__ == "__main__":

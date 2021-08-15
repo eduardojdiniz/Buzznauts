@@ -5,78 +5,10 @@ import numpy as np
 import os
 import os.path as op
 import argparse
-from sklearn.preprocessing import StandardScaler
 import torch
-from Buzznauts.models.baseline.ols import OLS_pytorch
-from Buzznauts.utils import vectorized_correlation, visualize_activity
-from Buzznauts.utils import load_dict, saveasnii, get_fmri
+from Buzznauts.utils import load_dict, saveasnii, get_fmri, set_device
+from Buzznauts.analysis.baseline import get_activations, predict_fmri_fast
 from tqdm import tqdm
-
-
-def get_activations(activations_dir, layer_name):
-    """This function loads neural network features/activations (preprocessed
-    using PCA) into a numpy array according to a given layer.
-
-    Parameters
-    ----------
-    activations_dir : str
-        Path to PCA processed Neural Network features
-    layer_name : str
-        which layer of the neural network to load,
-
-    Returns
-    -------
-    train_activations : np.array
-        matrix of dimensions #train_vids x #pca_components containing
-        activations of train videos
-
-    test_activations : np.array
-        matrix of dimensions #test_vids x #pca_components containing
-        activations of test videos
-
-    """
-    train_file = op.join(activations_dir, "train_" + layer_name + ".npy")
-    test_file = op.join(activations_dir, "test_" + layer_name + ".npy")
-    train_activations = np.load(train_file)
-    test_activations = np.load(test_file)
-    scaler = StandardScaler()
-    train_activations = scaler.fit_transform(train_activations)
-    test_activations = scaler.fit_transform(test_activations)
-
-    return train_activations, test_activations
-
-
-def predict_fmri_fast(train_activations, test_activations,
-                      train_fmri, use_gpu=False):
-    """This function fits a linear regressor using train_activations and
-    train_fmri, then returns the predicted fmri_pred_test using the fitted
-    weights and test_activations.
-
-    Parameters
-    ----------
-    train_activations : np.array
-        matrix of dimensions #train_vids x #pca_components containing
-        activations of train videos.
-    test_activations : np.array
-        matrix of dimensions #test_vids x #pca_components containing
-        activations of test videos
-    train_fmri : np.array
-        matrix of dimensions #train_vids x #voxels containing fMRI responses
-        to train videos
-    use_gpu : bool
-        Description of parameter `use_gpu`.
-
-    Returns
-    -------
-    fmri_pred_test: np.array
-        matrix of dimensions #test_vids x #voxels containing predicted fMRI
-        responses to test videos .
-
-    """
-    reg = OLS_pytorch(use_gpu)
-    reg.fit(train_activations, train_fmri.T)
-    fmri_pred_test = reg.predict(test_activations)
-    return fmri_pred_test
 
 
 def main():
@@ -89,7 +21,7 @@ def main():
                         help='saves predicted fMRI activity',
                         default=op.join(baseline, 'results'),
                         type=str)
-    parser.add_argument('-ad', '--activation_dir',
+    parser.add_argument('-ad', '--activations_dir',
                         help='directory containing DNN activations',
                         default=op.join(baseline, 'activations'),
                         type=str)
@@ -139,17 +71,14 @@ def main():
     visualize_results = args['visualize']
     batch_size = args['batch_size']
 
-    if torch.cuda.is_available():
-        use_gpu = True
-    else:
-        use_gpu = False
+    device = set_device()
 
     if ROI == "WB":
         track = "full_track"
     else:
         track = "mini_track"
 
-    activation_dir = op.join(args['activation_dir'], 'pca_100')
+    activations_dir = op.join(args['activations_dir'], 'pca_100')
     fmri_dir = op.join(args['fmri_dir'], track)
 
     sub_fmri_dir = op.join(fmri_dir, sub)
@@ -159,7 +88,7 @@ def main():
 
     print("ROi is : ", ROI)
 
-    train_activations, test_activations = get_activations(activation_dir,
+    features_train, features_test = get_activations(activations_dir,
                                                           layer)
     if track == "full_track":
         fmri_train_all, voxel_mask = get_fmri(sub_fmri_dir, ROI)
@@ -170,8 +99,8 @@ def main():
     if mode == 'val':
         # Here as an example we use first 900 videos as training and rest of
         # the videos as validation
-        test_activations = train_activations[900:, :]
-        train_activations = train_activations[:900, :]
+        features_test = features_train[900:, :]
+        features_train = features_train[:900, :]
         fmri_train = fmri_train_all[:900, :]
         fmri_test = fmri_train_all[900:, :]
         pred_fmri = np.zeros_like(fmri_test)
@@ -187,16 +116,16 @@ def main():
     with tqdm(total=100) as pbar:
         while i < num_voxels - batch_size:
             j = i + batch_size
-            pred_fmri[:, i:j] = predict_fmri_fast(train_activations,
-                                                test_activations,
+            pred_fmri[:, i:j] = predict_fmri_fast(features_train,
+                                                features_test,
                                                 fmri_train[:, i:j],
-                                                use_gpu=use_gpu)
+                                                device=device)
             i = j
             pbar.update((100*i) // num_voxels)
-    pred_fmri[:, i:] = predict_fmri_fast(train_activations,
-                                         test_activations,
-                                         fmri_train[:, i:i + batch_size],
-                                         use_gpu=use_gpu)
+        pred_fmri[:, i:] = predict_fmri_fast(features_train,
+                                            features_test,
+                                            fmri_train[:, i:i + batch_size],
+                                            device=device)
 
     if mode == 'val':
         score = vectorized_correlation(fmri_test, pred_fmri)
@@ -213,7 +142,7 @@ def main():
                          'score': score,
                          'voxel_mask': voxel_mask}
 
-            view = visualize_activity(sub, **view_args)
+            view = visualize_activity_surf(sub, **view_args)
             view_save_path = op.join(results_dir, ROI + '_val.html')
             view.save_as_html(view_save_path)
             print("Results saved in this directory: ", results_dir)

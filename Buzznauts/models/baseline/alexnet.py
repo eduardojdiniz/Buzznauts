@@ -2,10 +2,13 @@
 # coding=utf-8
 
 import os.path as op
+from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 import requests
+import Buzznauts as buzz
+import ast
 
 # AlexNet Definition
 __all__ = ['AlexNet', 'alexnet']
@@ -98,7 +101,6 @@ def alexnet(pretrained=False, ckpth_urls=None, **kwargs):
     -------
     model : AlexNet
         Pytorch instance of AlexNet model Class
-
     """
     model = AlexNet(**kwargs)
     if pretrained:
@@ -132,7 +134,6 @@ def load_alexnet(pretrained=False, custom_keys=False, **kwargs):
     -------
     model : AlexNet
         Pytorch instance of the AlexNet model Class
-
     """
     if pretrained:
         ckpth_urls = kwargs.pop('ckpth_urls', None)
@@ -169,8 +170,25 @@ def load_alexnet(pretrained=False, custom_keys=False, **kwargs):
     else:
         model = alexnet(**kwargs)
 
-    if torch.cuda.is_available():
-        model.cuda()
-    model.eval()
-
     return model
+
+
+def download_imagenet_labels(dst_file=None):
+    if dst_file is None:
+        buzz_root = Path(os.buzz.__path__[0]).parent.absolute()
+        out_file = op.join(buzz_root, 'models/alexnet/imagenet_labels.txt')
+
+    if not op.exists(dst_file):
+        url = 'https://gist.githubusercontent.com/yrevar/942d3a0ac09ec9e5eb3a/raw/238f720ff059c1f82f368259d1ca4ffa5dd8f9f5/imagenet1000_clsidx_to_labels.txt'
+        r = requests.get(url)
+        with open(dst_file, 'wb') as f:
+            f.write(r.content)
+
+
+def get_imagenet_labels(src_file):
+    if not op.exists(src_file):
+        download_imagenet_labels(src_file)
+    with open(src_file, 'r') as f:
+        contents = f.read()
+        imagenet_dict = ast.literal_eval(contents)
+    return imagenet_dict

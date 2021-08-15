@@ -5,13 +5,113 @@ import nibabel as nib
 import pickle
 import os.path as op
 import numpy as np
-import warnings
+import random
+import torch
 
 # Ignore FutureWarnings from nilearn
+import warnings
 with warnings.catch_warnings():
     # ignore all caught warnings
     warnings.filterwarnings("ignore")
     from nilearn import plotting
+
+
+def set_seed(seed=None, seed_torch=True):
+    """Set seed of random number generators to limit the number of sources of
+    nondeterministic behavior for a specific platform, device, and PyTorch
+    release. For more information, see
+    https://pytorch.org/docs/stable/notes/randomness.html.
+
+    Parameters
+    ----------
+    seed: int
+        Seed for random number generators.
+        Default: 2**32
+    seed_torch: bool
+        If we will set the seed for torch random number generators.
+        Default: True
+
+    Returns
+    -------
+    seed : int
+        Seed used for random number generators
+    """
+    if seed is None:
+        seed = np.random.choice(2 ** 32)
+
+    # Set python seed for custom operators
+    random.seed(seed)
+
+    # Set seed for the global NumPy RNG if any of the libraries rely on NumPy
+    np.random.seed(seed)
+
+    if seed_torch:
+        # Seed the RNG for all devices (both CPU and CUDA)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        torch.cuda.manual_seed(seed)
+        # Set cuDNN to deterministically select a convolution algorithm
+        torch.backends.cudnn.benchmark = False
+        # Ensure that the cuDNN convolution algorithm is deterministic
+        torch.backends.cudnn.deterministic = True
+
+    print(f'Random seed {seed} has been set.')
+
+    return seed
+
+
+def seed_worker(worker_id):
+    """Set seed for Dataloader. DataLoader will reseed workers the "Randomness
+    in multi-process data loading" algorithm. Use `worker_init_fn()` to
+    preserve reproducibility. For more information, see
+    https://pytorch.org/docs/stable/notes/randomness.html.
+    """
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
+
+
+def set_generator(seed=0):
+    """Set seed for Dataloader generators. DataLoader will reseed workers the
+    "Randomness in multi-process data loading" algorithm. Use `generator` to
+    preserve reproducibility. For more information, see
+    https://pytorch.org/docs/stable/notes/randomness.html.
+
+    Parameters
+    ----------
+    seed: int
+        Seed for random number generators.
+        Default: 0
+
+    Returns
+    -------
+    generator: torch.Generator
+        Seeded torch generator
+    """
+    generator = torch.Generator()
+    generator.manual_seed(seed)
+
+    return generator
+
+
+def set_device():
+    """
+    Set device (GPU or CPU).
+
+    Returns
+    -------
+    device: str
+        The device to be used, either `cpu` or `gpu`
+
+    """
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # Inform the user if torch  uses GPU or CPU.
+    if device != "cuda":
+        print("GPU is not enabled.")
+    else:
+        print("GPU is enabled.")
+
+    return device
 
 
 def save_dict(di_, filename_):
@@ -29,7 +129,6 @@ def load_dict(filename_):
 
 def saveasnii(brain_mask, nii_save_path, nii_data):
     img = nib.load(brain_mask)
-    print(img.shape)
     nii_img = nib.Nifti1Image(nii_data, img.affine, img.header)
     nib.save(nii_img, nii_save_path)
 
@@ -80,44 +179,3 @@ def get_fmri(fmri_dir, ROI):
         return ROI_data_train, voxel_mask
 
     return ROI_data_train
-
-
-def visualize_activity(sub, **kwargs):
-    vid_id = kwargs.pop('vid_id', 0)
-
-    buzz_root = '/home/dinize@acct.upmchs.net/proj/Buzznauts'
-    fmri_dir = op.join(buzz_root, 'data/fmri')
-    track_dir = kwargs.pop('track_dir', op.join(fmri_dir, 'full_track'))
-
-    brain_mask = kwargs.pop('brain_mask', op.join(fmri_dir, 'example.nii'))
-
-    results_dir = op.join(buzz_root, 'models/baseline/results')
-    nii_save_path =  op.join(results_dir, 'vid_activity.nii')
-    nii_save_path = kwargs.pop('nii_save_path', nii_save_path)
-
-    # Plotting parameters
-    threshold = kwargs.pop('threshold', None)
-    surf_mesh = kwargs.pop('surf_mesh', 'fsaverage')
-    title = kwargs.pop('title', 'fMRI response for sub' + sub)
-    colobar = kwargs.pop('colobar', True)
-
-    # Subject parameters
-    score = kwargs.pop('score', None)
-    voxel_mask = kwargs.pop('voxel_mask', None)
-
-    visual_mask_3D = np.zeros((78,93,71))
-    if score is None:
-        sub_fmri_dir = op.join(track_dir, sub)
-        fmri_train_all, voxel_mask = get_fmri(sub_fmri_dir, "WB")
-        visual_mask_3D[voxel_mask==1] = fmri_train_all[vid_id, :]
-    else:
-        visual_mask_3D[voxel_mask==1] = score
-
-    saveasnii(brain_mask, nii_save_path, visual_mask_3D)
-
-    view = plotting.view_img_on_surf(nii_save_path,
-                                    threshold = threshold,
-                                    surf_mesh = surf_mesh,
-                                    title = title,
-                                    colorbar = colobar)
-    return view

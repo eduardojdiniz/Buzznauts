@@ -5,9 +5,9 @@ channels:
     - pytorch
 
 dependencies:
-    - python=3.7
+    - python=3.8
     - numpy
-    - pytorch
+    - pytorch=1.9
     - torchvision
     - torchaudio
     - cudatoolkit=11.1
@@ -37,3 +37,4 @@ dependencies:
         - cryptography
         - idna
         - requests
+        - torchinfo

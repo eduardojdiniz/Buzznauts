@@ -3,12 +3,15 @@
 
 import torch
 import numpy as np
+from Buzznauts.utils import set_device
 
 
 class OLS_pytorch(object):
-    def __init__(self, use_gpu=False):
+    def __init__(self, device=None):
+        if device is None:
+            device = set_device()
+        self.device = device
         self.coefficients = []
-        self.use_gpu = use_gpu
         self.X = None
         self.y = None
 
@@ -20,11 +23,8 @@ class OLS_pytorch(object):
 
         X = self._concatenate_ones(X)
 
-        X = torch.from_numpy(X).float()
-        y = torch.from_numpy(y).float()
-        if self.use_gpu:
-            X = X.cuda()
-            y = y.cuda()
+        X = torch.from_numpy(X).float().to(self.device)
+        y = torch.from_numpy(y).float().to(self.device)
         XtX = torch.matmul(X.t(), X)
         Xty = torch.matmul(X.t(), y.unsqueeze(2))
         XtX = XtX.unsqueeze(0)
@@ -38,9 +38,7 @@ class OLS_pytorch(object):
         if len(entry.shape) == 1:
             entry = self._reshape_x(entry)
         entry = self._concatenate_ones(entry)
-        entry = torch.from_numpy(entry).float()
-        if self.use_gpu:
-            entry = entry.cuda()
+        entry = torch.from_numpy(entry).float().to(self.device)
         prediction = torch.matmul(entry, self.coefficients)
         prediction = prediction.cpu().numpy()
         prediction = np.squeeze(prediction).T
