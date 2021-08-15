@@ -137,4 +137,7 @@ scripts/Buzznauts/
 data/
 !/Buzznauts/data
 models/
+results/
+submission/
+visualizations/
 !/Buzznauts/models

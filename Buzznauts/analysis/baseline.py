@@ -231,7 +231,7 @@ def predict_fmri_fast(features_train, features_test,
 
 def perform_encoding(activations_dir, results_dir, fmri_dir, sub, layer,
                      ROI="WB", mode="val", visualize_results=True,
-                     batch_size=1000, device=None):
+                     batch_size=1000, device=None, viz_dir=None):
 
     if device is None:
         device = set_device()
@@ -284,9 +284,12 @@ def perform_encoding(activations_dir, results_dir, fmri_dir, sub, layer,
 
         # result visualization for whole brain (full_track)
         if track == "full_track" and visualize_results:
+            viz_dir = op.join(viz_dir, layer, track, sub)
+            if not op.exists(viz_dir):
+                os.makedirs(viz_dir)
             brain_mask = op.join(fmri_dir, 'example.nii')
-            nii_save_path = op.join(results_dir, ROI + '_val.nii')
-            html_save_path = op.join(results_dir, ROI + '_val.html')
+            nii_save_path = op.join(viz_dir, ROI + '_val.nii')
+            html_save_path = op.join(viz_dir, ROI + '_val.html')
 
             title = f'Predicted fMRI response for {sub} on validation videos'
             view_args = {'brain_mask': brain_mask,

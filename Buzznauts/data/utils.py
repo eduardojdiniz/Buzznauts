@@ -262,7 +262,7 @@ def plot_video_frames(rows, cols, frame_list, plot_width, plot_height):
 def visualize_activity_glass(sub, **kwargs):
 
     # Data parameters
-    video_id = kwargs.pop('video_id', 0)
+    vid_id = kwargs.pop('video_id', 0)
     fmri_dir = kwargs.pop('fmri_dir', op.join(buzz_root, 'data/fmri'))
     brain_mask = kwargs.pop('brain_mask', op.join(fmri_dir, 'example.nii'))
     track = kwargs.pop('track', 'full_track')
@@ -271,10 +271,11 @@ def visualize_activity_glass(sub, **kwargs):
     save_dir = op.join(buzz_root, 'models/baseline/results/alexnet/layer_5')
     save_dir = kwargs.pop('save_dir', save_dir)
 
+    video_id_str = str(vid_id+1).zfill(5)
     nii_save_path = op.join(save_dir, track, sub,
-                            f'vid_{video_id+1}_roi_{roi}_activity.nii')
+                            f'video_{video_id_str}_{roi}_activity.nii')
     jpg_save_path = op.join(save_dir, track, sub,
-                            f'vid_{video_id+1}_roi_{roi}_activity_glass.jpg')
+                            f'vid_{video_id_str}_{roi}_activity_glass.jpg')
     nii_save_path = kwargs.pop('nii_save_path', nii_save_path)
 
     nii_folder = Path(nii_save_path).parent.absolute()
@@ -295,13 +296,13 @@ def visualize_activity_glass(sub, **kwargs):
         track_dir = op.join(fmri_dir, track)
         sub_fmri_dir = op.join(track_dir, sub)
         fmri_data, voxel_mask = get_fmri(sub_fmri_dir, "WB")
-        visual_mask_3D[voxel_mask==1] = fmri_data[video_id, :]
+        visual_mask_3D[voxel_mask==1] = fmri_data[vid_id, :]
     else:
         visual_mask_3D[voxel_mask==1] = score
 
     saveasnii(brain_mask, nii_save_path, visual_mask_3D)
 
-    title = f'fMRI response for {sub} watching video {video_id+1}'
+    title = f'fMRI response for {sub} watching video {video_id_str}'
     view = plotting.plot_glass_brain(nii_save_path,
                                     title = title,
                                     plot_abs = plot_abs,
