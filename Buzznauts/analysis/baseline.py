@@ -103,7 +103,7 @@ def get_alexnet_predictions(src_file, output):
 
     # sort the probability vector in descending order
     sorted, indices = torch.sort(output, descending=True)
-    percentage = F.softmax(output) * 100.0
+    percentage = F.softmax(output, dim=0) * 100.0
 
     # Get the most probable first 5 classes the input belongs to
     predictions = [(classes[i], percentage[i].item()) for i in indices[:5]]
