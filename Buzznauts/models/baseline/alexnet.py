@@ -149,7 +149,7 @@ def load_alexnet(pretrained=False, custom_keys=False, **kwargs):
             # Download pretrained Alexnet from:
             # https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth
             # and save in the model directory
-            chpth_dir = Path(ckpth_filepath.parent.absolute())
+            chpth_dir = Path(ckpth_filepath).parent.absolute()
             if not op.exists(ckpth_dir):
                 os.makedirs(ckpth_dir)
                 r = requests.get(ckpth_urls['alexnet'])
