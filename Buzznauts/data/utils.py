@@ -278,8 +278,9 @@ def visualize_activity_glass(sub, **kwargs):
                             f'vid_{video_id+1}_roi_{roi}_activity_glass.jpg')
     nii_save_path = kwargs.pop('nii_save_path', nii_save_path)
 
-    if not op.exists(nii_save_path):
-        os.makedirs(Path(nii_save_path).parent.absolute())
+    nii_folder = Path(nii_save_path).parent.absolute()
+    if not op.exists(nii_folder):
+        os.makedirs(nii_folder)
 
     # Plotting parameters
     plot_abs = kwargs.pop('plot_abs', False)
