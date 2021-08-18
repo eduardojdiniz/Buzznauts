@@ -303,6 +303,40 @@ class VideoFrameDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.video_list)
+    
+
+class FrameDataset(torch.utils.data.Dataset):
+    """Frames dataset.
+    """
+    
+    def __init__(self, videoframedataset, transform=None):
+        """
+        Parameters
+        ----------
+        videoframedataset : Buzznauts.data.videodataframe.VideoFrameDataset
+        transform : torchvision.transforms.transforms.Compose
+            callable, optional transform to be applied on a sample
+        """
+        self.videoframedataset = videoframedataset
+        self.transform = transform
+        self.num_frames = videoframedataset[0][0].shape[0]
+        
+    def __len__(self):
+        return len(self.videoframedataset)*self.num_frames
+    
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+            
+        video_idx, frame_idx = divmod(idx, self.num_frames)
+        
+        frame = self.videoframedataset[video_idx][0][frame_idx]
+        label = self.videoframedataset[video_idx][1]
+        
+        if self.transform is not None:
+            frame = self.transform(frame)
+        
+        return frame, label
 
 
 class ImglistToTensor(torch.nn.Module):
