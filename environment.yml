@@ -39,3 +39,4 @@ dependencies:
         - requests
         - torchinfo
         - nltk
+        - wandb

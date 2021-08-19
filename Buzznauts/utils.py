@@ -16,7 +16,7 @@ with warnings.catch_warnings():
     from nilearn import plotting
 
 
-def set_seed(seed=None, seed_torch=True):
+def set_seed(seed=None, seed_torch=True, seed_cudnn=False):
     """Set seed of random number generators to limit the number of sources of
     nondeterministic behavior for a specific platform, device, and PyTorch
     release. For more information, see
@@ -37,7 +37,10 @@ def set_seed(seed=None, seed_torch=True):
         Seed used for random number generators
     """
     if seed is None:
-        seed = np.random.choice(2 ** 32)
+        seed_str = "buzznauts"
+        seed = [str(ord(letter) - 96) for letter in seed_str]
+        seed = abs(int(''.join(seed))) % 2 ** 32
+        #seed = np.random.choice(2 ** 32)
 
     # Set python seed for custom operators
     random.seed(seed)
@@ -50,10 +53,11 @@ def set_seed(seed=None, seed_torch=True):
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
         torch.cuda.manual_seed(seed)
-        # Set cuDNN to deterministically select a convolution algorithm
-        torch.backends.cudnn.benchmark = False
-        # Ensure that the cuDNN convolution algorithm is deterministic
-        torch.backends.cudnn.deterministic = True
+        if seed_cudnn:
+            # Set cuDNN to deterministically select a convolution algorithm
+            torch.backends.cudnn.benchmark = False
+            # Ensure that the cuDNN convolution algorithm is deterministic
+            torch.backends.cudnn.deterministic = True
 
     print(f'Random seed {seed} has been set.')
 
